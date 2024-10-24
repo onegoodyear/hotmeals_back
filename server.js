@@ -2,7 +2,9 @@ const express = require("express");
 const dotenv = require("dotenv");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const connectDB = require("./config/dbConfig"); // Import connectDB
 const userRoutes = require("./routes/userRoutes"); // Import userRoutes
+
 
 dotenv.config();
 
@@ -13,17 +15,7 @@ app.use(express.json()); // For parsing application/json
 app.use(cors());         // Enable CORS
 
 // MongoDB connection
-mongoose
-  .connect(process.env.MONGODB_CON_STRING, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log("Connected to MongoDB");
-  })
-  .catch((err) => {
-    console.error("Failed to connect to MongoDB:", err);
-  });
+connectDB();
 
 // Routes
 app.use("/users", userRoutes); // Use userRoutes for all /api/users routes

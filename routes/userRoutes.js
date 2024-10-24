@@ -8,20 +8,24 @@ const {
   updateUserProfile,
   changePassword,
   deleteUser,
-
+  updatePhoneNumber
 } = require("../controllers/userController");
 
-const { authMiddleware } = require("../middlewares/authMiddleware");
+const authMiddleware = require("../middlewares/authMiddleware");
 
-router.post("/register", registerUser);
+const upload = require("../middlewares/uploadMiddleware");
+
+router.post("/register", upload.single("profilePicture"), registerUser);
 
 router.post("/login", loginUser);
 
 router.get("/profile", authMiddleware, getUserProfile);
 
-router.put("/profile", authMiddleware, updateUserProfile);
+router.put("/profile", authMiddleware, upload.single("profilePicture"), updateUserProfile);
 
 router.put("/change-password", authMiddleware, changePassword);
+
+router.patch("/profile", authMiddleware, updatePhoneNumber);
 
 router.delete("/profile", authMiddleware, deleteUser);
 
