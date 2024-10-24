@@ -1,4 +1,5 @@
 const Restaurant = require("../models/Restaurant");
+const Item = require("../models/Item");
 
 exports.getAllRestaurants = async (req, res) => {
   try {
@@ -27,7 +28,7 @@ exports.getRestaurantById = async (req, res) => {
 exports.createRestaurant = async (req, res) => {
   try {
     // Destructure the request body
-    const { name, logo, location, cuisineType, averageRating, contact } =
+    const { name, menu, location, cuisineType, averageRating, contact } =
       req.body;
 
     // Check if all required fields are present
@@ -54,6 +55,7 @@ exports.createRestaurant = async (req, res) => {
         email: contact.email,
         socialMedia: contact.socialMedia,
       },
+      menu,
     });
 
     const savedRestaurant = await newRestaurant.save();
@@ -66,6 +68,51 @@ exports.createRestaurant = async (req, res) => {
     console.error("Error creating restaurant:", error);
     res.status(500).json({
       message: "Server error. Could not create restaurant.",
+      error: error.message,
+    });
+  }
+};
+
+exports.addItemsToRestaurant = async (req, res) => {
+  const { id } = req.params;
+  const items = req.body.items;
+  try {
+    const restaurant = await Restaurant.findById(id);
+    if (!restaurant) {
+      return res.status(404).json({ message: "Restaurant not found" });
+    }
+    if (!Array.isArray(items) || items.length === 0) {
+      return res
+        .status(400)
+        .json({ message: "Items must be an array and cannot be empty." });
+    }
+    const savedItems = [];
+    for (const item of items) {
+      const { name, price, description } = item;
+      if (!name || !price) {
+        continue;
+      }
+      const newItem = new Item({
+        name,
+        price,
+        description: description,
+      });
+      const savedItem = await newItem.save();
+      savedItems.push(savedItem._id);
+    }
+    if (!Array.isArray(restaurant.menu)) {
+      restaurant.menu = [];
+    }
+    restaurant.menu.push(...savedItems);
+    await restaurant.save();
+    return res.status(201).json({
+      message: "Items added to restaurant successfully!",
+      restaurant,
+    });
+  } catch (error) {
+    console.error("Error adding items to restaurant:", error);
+    res.status(500).json({
+      message: "Server error. Could not add items to restaurant.",
       error: error.message,
     });
   }

@@ -5,7 +5,9 @@ const {
   getAllRestaurants,
   getRestaurantById,
   createRestaurant,
+  addItemsToRestaurant,
 } = require("../controllers/restaurantController");
+
 const authMiddleware = require("../middlewares/authMiddleware");
 const adminMiddleware = require("../middlewares/adminMiddleware");
 const { uploadLogo } = require("../middlewares/uploadMiddleware");
@@ -21,5 +23,7 @@ router.post(
   uploadLogo.single("logo"),
   createRestaurant
 );
+
+router.put("/:id", authMiddleware, adminMiddleware, addItemsToRestaurant);
 
 module.exports = router;

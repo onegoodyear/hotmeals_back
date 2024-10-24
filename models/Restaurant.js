@@ -17,6 +17,15 @@ const restaurantSchema = new Schema({
       longitude: { type: Number, required: null },
     },
   },
+  menu: {
+    type: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Item",
+      },
+    ],
+    default: [],
+  },
   cuisineType: {
     type: String,
     required: true,
@@ -41,8 +50,6 @@ const restaurantSchema = new Schema({
     },
   },
 });
-
-
 
 const Restaurant = mongoose.model("Restaurant", restaurantSchema);
 module.exports = Restaurant;
