@@ -3,8 +3,13 @@ const jwt = require("jsonwebtoken");
 
 // User Registration
 exports.registerUser = async (req, res) => {
-  const { name, email, password, phoneNumber, address } = req.body;
+  const { name, email, password, phoneNumber, address, role } = req.body;
   try {
+    if (role == "admin") {
+      return res
+        .status(403)
+        .json({ message: "You are not authorized to be assigned admin" });
+    }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "Email is already in use" });
@@ -17,6 +22,7 @@ exports.registerUser = async (req, res) => {
       phoneNumber,
       address,
       profilePictureUrl,
+      role: role || "user",
     });
     await user.save();
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
@@ -124,20 +130,28 @@ exports.deleteUser = async (req, res) => {
   }
 };
 
-
 exports.updatePhoneNumber = async (req, res) => {
   const { phoneNumber } = req.body;
   try {
     const userId = req.user.id; // Assuming you're using a middleware to set req.user
-
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { phoneNumber },
       { new: true }
     ).select("-password");
-    res.status(200).json({ message: "Phone number updated successfully", user: updatedUser });
+    res
+      .status(200)
+      .json({
+        message: "Phone number updated successfully",
+        user: updatedUser,
+      });
   } catch (error) {
     console.error("Error updating phone number:", error);
-    res.status(500).json({ message: "Something went wrong with the server", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Something went wrong with the server",
+        error: error.message,
+      });
   }
 };

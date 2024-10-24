@@ -42,13 +42,14 @@ const userSchema = new Schema({
       trim: true,
     },
   },
-  isAdmin: {
-    type: Boolean,
-    default: false,
-  },
   profilePictureUrl: {
     type: String,
     default: null,
+  },
+  role: {
+    type: String,
+    enum: ["user", "admin", "delivery"],
+    default: "user",
   },
   createdAt: {
     type: Date,

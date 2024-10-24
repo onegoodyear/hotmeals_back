@@ -2,15 +2,28 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinaryConfig");
 
-const storage = new CloudinaryStorage({
+// Middleware for uploading profile pictures
+const profileStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: "profile-images",
+    folder: "profile-images", // Folder for profile pictures
     allowed_formats: ["jpg", "png", "jpeg"],
     transformation: [{ width: 150, height: 150, crop: "fill" }],
   },
 });
 
-const upload = multer({ storage: storage });
+// Middleware for uploading restaurant logos
+const logoStorage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "restaurant-logos", // New folder for restaurant logos
+    allowed_formats: ["jpg", "png", "jpeg"],
+    transformation: [{ width: 150, height: 150, crop: "fill" }],
+  },
+});
 
-module.exports = upload;
+// Export the upload middlewares
+const uploadProfilePicture = multer({ storage: profileStorage });
+const uploadLogo = multer({ storage: logoStorage });
+
+module.exports = { uploadProfilePicture, uploadLogo };
