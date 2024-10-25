@@ -74,8 +74,9 @@ exports.createRestaurant = async (req, res) => {
 };
 
 exports.addItemsToRestaurant = async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;
   const items = req.body.items;
+  const images = req.files;
   try {
     const restaurant = await Restaurant.findById(id);
     if (!restaurant) {
@@ -87,7 +88,8 @@ exports.addItemsToRestaurant = async (req, res) => {
         .json({ message: "Items must be an array and cannot be empty." });
     }
     const savedItems = [];
-    for (const item of items) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
       const { name, price, description } = item;
       if (!name || !price) {
         continue;
@@ -95,7 +97,9 @@ exports.addItemsToRestaurant = async (req, res) => {
       const newItem = new Item({
         name,
         price,
+        image: images[i] ? images[i].path : undefined,
         description: description,
+        restaurant: restaurant._id,
       });
       const savedItem = await newItem.save();
       savedItems.push(savedItem._id);

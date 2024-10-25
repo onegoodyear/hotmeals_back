@@ -6,8 +6,21 @@ const itemSchema = new Schema({
     type: String,
     required: true,
   },
+  restaurant: {
+    type: Schema.Types.ObjectId,
+    ref: "Restaurant",
+    required: true,
+  },
   price: {
     type: Number,
+    required: true,
+  },
+  image: {
+    type: String,
+  },
+  restaurant: {
+    type: Schema.Types.ObjectId,
+    ref: "Restaurant",
     required: true,
   },
   description: {

@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 
-
 const userSchema = new Schema({
   name: {
     type: String,
@@ -48,7 +47,7 @@ const userSchema = new Schema({
   },
   role: {
     type: String,
-    enum: ["user", "admin", "delivery"],
+    enum: ["user", "admin"],
     default: "user",
   },
   createdAt: {

@@ -5,6 +5,7 @@ const cors = require("cors");
 const connectDB = require("./config/dbConfig"); // Import connectDB
 const userRoutes = require("./routes/userRoutes"); // Import userRoutes
 const restaurantRoutes = require("./routes/restaurantRoutes"); // Import restaurantRoutes
+const orderRoutes = require("./routes/orderRoutes"); // Import orderRoutes
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ connectDB();
 // Routes
 app.use("/users", userRoutes); // Use userRoutes for all /api/users routes
 app.use("/restaurants", restaurantRoutes); // Use restaurantRoutes for all /api/restaurants routes
+app.use("/orders", orderRoutes); // Use orderRoutes for all /api/orders routes
 
 // Server listener
 const PORT = process.env.PORT || 10000;

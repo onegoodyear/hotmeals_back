@@ -25,9 +25,13 @@ exports.registerUser = async (req, res) => {
       role: role || "user",
     });
     await user.save();
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
     res.status(201).json({ userId: user._id, token });
   } catch (error) {
     console.error("Error during registration:", error); // Log the full error
@@ -54,9 +58,13 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "Wrong Password" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
     res.status(200).json({ userId: user._id, token });
   } catch (error) {
     res.status(500).json({ message: "Something went wrong with the server" });
@@ -139,19 +147,15 @@ exports.updatePhoneNumber = async (req, res) => {
       { phoneNumber },
       { new: true }
     ).select("-password");
-    res
-      .status(200)
-      .json({
-        message: "Phone number updated successfully",
-        user: updatedUser,
-      });
+    res.status(200).json({
+      message: "Phone number updated successfully",
+      user: updatedUser,
+    });
   } catch (error) {
     console.error("Error updating phone number:", error);
-    res
-      .status(500)
-      .json({
-        message: "Something went wrong with the server",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Something went wrong with the server",
+      error: error.message,
+    });
   }
 };

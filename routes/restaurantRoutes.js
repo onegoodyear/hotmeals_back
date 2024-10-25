@@ -10,7 +10,10 @@ const {
 
 const authMiddleware = require("../middlewares/authMiddleware");
 const adminMiddleware = require("../middlewares/adminMiddleware");
-const { uploadLogo } = require("../middlewares/uploadMiddleware");
+const {
+  uploadLogo,
+  uploadItemImages,
+} = require("../middlewares/uploadMiddleware");
 
 router.get("/", getAllRestaurants);
 
@@ -24,6 +27,12 @@ router.post(
   createRestaurant
 );
 
-router.put("/:id", authMiddleware, adminMiddleware, addItemsToRestaurant);
+router.put(
+  "/:id",
+  authMiddleware,
+  adminMiddleware,
+  uploadItemImages.array("images"),
+  addItemsToRestaurant
+);
 
 module.exports = router;
