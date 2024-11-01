@@ -1,9 +1,9 @@
-const Restaurant = require("../models/Restaurant");
-const Item = require("../models/Item");
+// controllers/orderController.js
+const restaurantServices = require("../services/restaurantServices");
 
 exports.getAllRestaurants = async (req, res) => {
   try {
-    const restaurants = await Restaurant.find();
+    const restaurants = await restaurantServices.getAllRestaurants();
     res.status(200).json({ restaurants });
   } catch (error) {
     console.error("Error while fetching restaurants:", error);
@@ -14,7 +14,7 @@ exports.getAllRestaurants = async (req, res) => {
 exports.getRestaurantById = async (req, res) => {
   const { id } = req.params;
   try {
-    const restaurant = await Restaurant.findById(id);
+    const restaurant = await restaurantServices.getRestaurantById(id);
     if (!restaurant) {
       return res.status(404).json({ message: "Restaurant not found" });
     }
@@ -27,21 +27,14 @@ exports.getRestaurantById = async (req, res) => {
 
 exports.createRestaurant = async (req, res) => {
   try {
-    // Destructure the request body
-    const { name, menu, location, cuisineType, averageRating, contact } =
-      req.body;
+    const { name, menu, location, cuisineType, averageRating, contact } = req.body;
 
-    // Check if all required fields are present
     if (!name || !location || !cuisineType || !contact) {
-      return res
-        .status(400)
-        .json({ message: "All required fields must be provided." });
+      return res.status(400).json({ message: "All required fields must be provided." });
     }
 
     const logoUrl = req.file ? req.file.path : null;
-
-    // Create a new restaurant object
-    const newRestaurant = new Restaurant({
+    const restaurantData = {
       name,
       logo: logoUrl,
       location: {
@@ -56,10 +49,9 @@ exports.createRestaurant = async (req, res) => {
         socialMedia: contact.socialMedia,
       },
       menu,
-    });
+    };
 
-    const savedRestaurant = await newRestaurant.save();
-
+    const savedRestaurant = await restaurantServices.createRestaurant(restaurantData);
     res.status(201).json({
       message: "Restaurant created successfully.",
       restaurant: savedRestaurant,
@@ -78,37 +70,11 @@ exports.addItemsToRestaurant = async (req, res) => {
   const items = req.body.items;
   const images = req.files;
   try {
-    const restaurant = await Restaurant.findById(id);
-    if (!restaurant) {
-      return res.status(404).json({ message: "Restaurant not found" });
-    }
     if (!Array.isArray(items) || items.length === 0) {
-      return res
-        .status(400)
-        .json({ message: "Items must be an array and cannot be empty." });
+      return res.status(400).json({ message: "Items must be an array and cannot be empty." });
     }
-    const savedItems = [];
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-      const { name, price, description } = item;
-      if (!name || !price) {
-        continue;
-      }
-      const newItem = new Item({
-        name,
-        price,
-        image: images[i] ? images[i].path : undefined,
-        description: description,
-        restaurant: restaurant._id,
-      });
-      const savedItem = await newItem.save();
-      savedItems.push(savedItem._id);
-    }
-    if (!Array.isArray(restaurant.menu)) {
-      restaurant.menu = [];
-    }
-    restaurant.menu.push(...savedItems);
-    await restaurant.save();
+
+    const restaurant = await restaurantServices.addItemsToRestaurant(id, items, images);
     return res.status(201).json({
       message: "Items added to restaurant successfully!",
       restaurant,

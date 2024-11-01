@@ -35,7 +35,7 @@ const userSchema = new Schema({
       required: true,
       trim: true,
     },
-    zipCode: {
+    state: {
       type: String,
       required: true,
       trim: true,
@@ -74,3 +74,5 @@ userSchema.methods.comparePassword = async function (password) {
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;
+
+
