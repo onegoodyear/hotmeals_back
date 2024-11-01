@@ -14,30 +14,33 @@ const userSchema = new Schema({
     trim: true,
     unique: true,
   },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.googleId;
+    },
   },
   phoneNumber: {
     type: String,
-    required: true,
     trim: true,
     unique: true,
   },
   address: {
     street: {
       type: String,
-      required: true,
       trim: true,
     },
     city: {
       type: String,
-      required: true,
       trim: true,
     },
     state: {
       type: String,
-      required: true,
       trim: true,
     },
   },
@@ -74,5 +77,3 @@ userSchema.methods.comparePassword = async function (password) {
 
 const User = mongoose.model("User", userSchema);
 module.exports = User;
-
-
