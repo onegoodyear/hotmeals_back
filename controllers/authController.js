@@ -1,33 +1,20 @@
-// controllers/UserController.js
+// controllers/authController.js
 const authServices = require("../services/authServices");
-const passportServices = require("../services/passportServices");
 const jwt = require("jsonwebtoken");
 
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password, phoneNumber, address, role } = req.body;
-    const profilePictureUrl = req.file ? req.file.path : null;
-    const result = await authServices.registerUser({
-      name,
-      email,
-      password,
-      phoneNumber,
-      address,
-      role,
-      profilePictureUrl,
-    });
+    const userData = { ...req.body, profilePictureUrl: req.file ? req.file.path : null };
+    const result = await authServices.registerUser(userData);
     res.status(201).json(result);
   } catch (error) {
-    res
-      .status(error.message === "Email is already in use" ? 400 : 500)
-      .json({ message: error.message });
+    res.status(error.message === "Email is already in use" ? 400 : 500).json({ message: error.message });
   }
 };
 
 exports.loginUser = async (req, res) => {
   try {
-    const { identifier, password } = req.body;
-    const result = await authServices.loginUser(identifier, password);
+    const result = await authServices.loginUser(req.body.identifier, req.body.password);
     res.status(200).json(result);
   } catch (error) {
     res.status(400).json({ message: error.message });
@@ -45,14 +32,8 @@ exports.getUserProfile = async (req, res) => {
 
 exports.updateUserProfile = async (req, res) => {
   try {
-    const updatedUser = await authServices.updateUserProfile(
-      req.userId,
-      req.body
-    );
-    res.status(200).json({
-      message: "User updated successfully",
-      user: updatedUser,
-    });
+    const updatedUser = await authServices.updateUserProfile(req.userId, req.body);
+    res.status(200).json({ message: "User updated successfully", user: updatedUser });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -60,17 +41,10 @@ exports.updateUserProfile = async (req, res) => {
 
 exports.changePassword = async (req, res) => {
   try {
-    const { oldPassword, newPassword } = req.body;
-    const message = await authServices.changePassword(
-      req.userId,
-      oldPassword,
-      newPassword
-    );
+    const message = await authServices.changePassword(req.userId, req.body.oldPassword, req.body.newPassword);
     res.status(200).json({ message });
   } catch (error) {
-    res
-      .status(error.message === "Wrong Password" ? 400 : 500)
-      .json({ message: error.message });
+    res.status(error.message === "Wrong Password" ? 400 : 500).json({ message: error.message });
   }
 };
 
@@ -85,37 +59,20 @@ exports.deleteUser = async (req, res) => {
 
 exports.updatePhoneNumber = async (req, res) => {
   try {
-    const { phoneNumber } = req.body;
-    const updatedUser = await authServices.updatePhoneNumber(
-      req.userId,
-      phoneNumber
-    );
-    res.status(200).json({
-      message: "Phone number updated successfully",
-      user: updatedUser,
-    });
+    const updatedUser = await authServices.updatePhoneNumber(req.userId, req.body.phoneNumber);
+    res.status(200).json({ message: "Phone number updated successfully", user: updatedUser });
   } catch (error) {
-    res.status(500).json({
-      message: "Something went wrong with the server",
-      error: error.message,
-    });
+    res.status(500).json({ message: "Something went wrong with the server", error: error.message });
   }
 };
 
-exports.googleAuth = passportServices.authenticate("google", {
-  scope: ["profile", "email"],
-});
+// Google Auth
+exports.googleAuth = authServices.googleAuth;
 
 exports.googleAuthCallback = async (req, res) => {
   try {
-    console.log("Google Auth Callback: ", req.user);
-    const user = await authServices.handleGoogleAuth(req.user);
-    const token = jwt.sign(
-      { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-    res.redirect(`/orders?token=${token}`);
+    const result = await authServices.googleAuthCallback(req.user);
+    res.redirect(`/orders?token=${result.token}`);
   } catch (error) {
     console.error("Google Auth Callback Error: ", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -124,9 +81,7 @@ exports.googleAuthCallback = async (req, res) => {
 
 exports.logout = (req, res, next) => {
   req.logout((err) => {
-    if (err) {
-      return next(err);
-    }
+    if (err) return next(err);
     res.redirect("/");
   });
 };
